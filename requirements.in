@@ -1,0 +1,5 @@
+pytest
+pip-tools
+requests
+jsonschema
+python-dateutil

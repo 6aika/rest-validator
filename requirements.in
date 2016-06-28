@@ -1,5 +1,7 @@
-pytest
-pip-tools
-requests
+click
+jinja2
 jsonschema
+pip-tools
+pytest
 python-dateutil
+requests

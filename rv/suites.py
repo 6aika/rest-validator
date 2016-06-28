@@ -16,7 +16,7 @@ class Suite(object):
 
     @property
     def errors(self):
-        return chain(*(t.errors for t in self.tests))
+        return chain(*((t.errors or ()) for t in self.tests))
 
     def run(self):
         """

@@ -6,12 +6,11 @@ import jsonschema
 import requests
 
 from rv.suites import RequestSuite
-from rv.tests import MultipleParamsTest, SingleParamTest
-from rv.utils import cached_property
+from rv.tests import MultipleParamsTest, SingleParamTest, ValidationTest
+from rv.utils import cached_property, wallclock
 
 
 class Limits(object):
-
     def __init__(
         self,
         *,
@@ -49,10 +48,11 @@ class ListTester(RequestSuite):
 
     def get_list(self, response):
         items = self.peel(response.json())
-        if self.validator:
-            for item in items:
-                self.validator.validate(item)
         return items
+
+    def validate(self, item):
+        if self.validator:
+            yield from self.validator.iter_errors(item)
 
     @cached_property
     def validator(self):
@@ -78,6 +78,7 @@ class ListTester(RequestSuite):
         return values
 
     def _build_tests(self):
+        yield ValidationTest(suite=self, validate=self.validate, items=self.baseline_items, name='Baseline Item Validation')
         yield from self._build_single_param_tests()
         yield from self._build_multi_param_tests()
 

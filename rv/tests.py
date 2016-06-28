@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from rv.excs import ExpectedMoreItems, ParamValueError
+from rv.excs import ExpectedMoreItems, ParamValueError, ValidationException, WrappedTestException
 from rv.utils import wallclock
 
 
@@ -17,7 +17,12 @@ class Test(object):
     def run(self):
         if not self.has_been_run:
             start_time = wallclock()
-            self.errors = list(self.execute())
+            errors = []
+            try:
+                errors.extend(self.execute())
+            except Exception as exc:
+                errors.append(WrappedTestException(test=self, exception=exc))
+            self.errors = errors
             self.duration = wallclock() - start_time
             self.has_been_run = True
         return not bool(self.errors)
@@ -63,6 +68,12 @@ class SingleParamTest(BaseParamTest):
             item_value = param.get_value(item)
             if not param.operator(item_value, self.value):
                 yield ParamValueError(test=self, item=item, item_value=item_value)
+
+        yield from ValidationTest(
+            suite=self.suite,
+            validate=self.suite.validate,
+            items=items
+        ).execute()
 
     @property
     def name(self):
@@ -111,6 +122,12 @@ class MultipleParamsTest(BaseParamTest):
                 if not param.operator(item_value, exp_value):
                     yield ParamValueError(test=self, item=item, item_value=item_value)
 
+        yield from ValidationTest(
+            suite=self.suite,
+            validate=self.suite.validate,
+            items=items
+        ).execute()
+
     @property
     def name(self):
         return "Multi: %s" % (",".join(sorted(
@@ -118,3 +135,17 @@ class MultipleParamsTest(BaseParamTest):
             for (param, value)
             in self.params_to_values.items()
         )))
+
+
+class ValidationTest(Test):
+    def __init__(self, suite, validate, items, name=None):
+        super().__init__(suite)
+        self.validate = validate
+        self.items = items
+        if name:
+            self.name = name
+
+    def execute(self):
+        for item in self.items:
+            for err in self.validate(item):
+                yield ValidationException(test=self, item=item, error=err)

@@ -46,6 +46,6 @@ ISSUE_SCHEMA = {
         "description",
         "requested_datetime",
         "updated_datetime",
-        "expected_datetime",
+        #"expected_datetime",
     ]
 }

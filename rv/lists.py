@@ -93,9 +93,14 @@ class ListTester(RequestSuite):
         }
         limit = self.limits.max_single_tests_per_param
         for param, values in param_to_values.items():
-            if limit:
-                values = sorted(random.sample(values, min(len(values), limit)))
-            for value in values:
+            if param.discrete:
+                test_values = param.generate_values(values, count=limit)
+            else:  # Try to avoid duplicate tests here
+                test_values = set()
+                generator = param.generate_values(values, count=limit)
+                while len(test_values) < min(len(values), (limit or 9000)):
+                    test_values.add(next(generator))
+            for value in test_values:
                 yield SingleParamTest(tester=self, param=param, value=value)
 
     def _produce_combinations(self):

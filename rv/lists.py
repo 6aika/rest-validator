@@ -98,7 +98,7 @@ class ListTester(RequestSuite):
                 while len(test_values) < min(len(values), (limit or 9000)):
                     test_values.add(next(generator))
             for value in test_values:
-                yield SingleParamTest(tester=self, param=param, value=value)
+                yield SingleParamTest(suite=self, param=param, value=value)
 
     def _build_multi_param_tests(self):
         prop_values = self.baseline_values
@@ -126,7 +126,7 @@ class ListTester(RequestSuite):
                 for param in params:
                     involvement_counter[param] += 1
             yield MultipleParamsTest(
-                tester=self,
+                suite=self,
                 params_to_values=params_to_values
             )
             n_tests += 1

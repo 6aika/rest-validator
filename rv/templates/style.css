@@ -1,0 +1,77 @@
+* {
+  box-sizing: border-box;
+}
+header {
+  background: #0074d9;
+  color: #7fdbff;
+  text-transform: uppercase;
+  letter-spacing: 0.2rem;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+h1,
+.f1 {
+  font-size: 3rem;
+}
+h2,
+.f2 {
+  font-size: 2.25rem;
+}
+h3,
+.f3 {
+  font-size: 1.5rem;
+}
+body {
+  margin: 0;
+  font: 14pt/1.4 avenir next, avenir, -apple-system, BlinkMacSystemFont, helvetica, helvetica neue, ubuntu, roboto, noto, arial, sans-serif;
+}
+article {
+  margin: 1em;
+}
+.num {
+  text-align: right !important;
+}
+td {
+  vertical-align: top;
+}
+th {
+  text-align: left;
+}
+table.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.table thead th {
+  text-align: left;
+  border-bottom: 2px solid #0074d9;
+  vertical-align: bottom;
+}
+table.table td,
+table.table th {
+  padding: 0.25rem;
+}
+.zebra tbody tr:nth-child(even) td,
+.zebra tbody tr:nth-child(even) th {
+  background: #cef3ff;
+}
+blockquote {
+  margin-left: 0;
+  padding-left: 0.5rem;
+  border-left: 2px solid #7fdbff;
+}
+.errors {
+  color: #ff4136;
+}
+.cols {
+  display: flex;
+}
+.cols .col {
+  flex: 1;
+}
+dl {
+  margin-top: 0;
+}
+table.detail {
+  font-size: 0.8rem;
+}

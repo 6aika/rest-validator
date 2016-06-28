@@ -4,6 +4,8 @@ import logging
 
 import click
 
+from rv.report import HTMLReportWriter
+
 log = logging.getLogger(__name__)
 
 
@@ -41,7 +43,13 @@ class RvCLI(click.MultiCommand):
             params=[
                 click.Option(('-d', '--debug', 'loglevel'), flag_value=logging.DEBUG),
                 click.Option(('-v', '--verbose', 'loglevel'), flag_value=logging.INFO),
-            ])
+                click.Option(
+                    ('--html',),
+                    help='emit HTML report to this path',
+                    type=click.File(mode='w', encoding='utf-8', lazy=True),
+                ),
+            ],
+        )
 
     def get_command(self, ctx, name):
         self.validator = find_class(name, BaseValidator)()
@@ -58,6 +66,11 @@ class RvCLI(click.MultiCommand):
             for err in suite.errors:
                 print('*', err)
             print('=' * 80)
+
+        html_fp = self.options['html']
+        if html_fp:
+            hrw = HTMLReportWriter(suites)
+            html_fp.write(hrw.render())
 
     def init_callback(self, **options):
         self.options = options

@@ -6,6 +6,8 @@ from rv.utils import wallclock
 
 class Test(object):
     name = "Some Test"
+    description = ""
+    url = ""
 
     def __init__(self, suite):
         self.id = 't%s' % uuid4()
@@ -29,6 +31,19 @@ class Test(object):
 
     def execute(self):
         raise NotImplementedError("...")
+
+    def get_report_detail(self):
+        """
+        Get a dict (or a sorted dict?) of any additional "detail" that is worthwhile to show in a report.
+        """
+        return {}
+
+    @property
+    def type(self):
+        typename = self.__class__.__name__
+        if typename.endswith('Test'):
+            typename = typename[:-4]
+        return typename
 
 
 class BaseParamTest(Test):

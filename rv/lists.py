@@ -24,6 +24,7 @@ class Limits(object):
 
 
 class ListTester(RequestSuite):
+    description = "Test that filters work in a list endpoint"
 
     def __init__(self, *, endpoint, schema, parameters, name=None, limits=None):
         if not name:
@@ -34,6 +35,12 @@ class ListTester(RequestSuite):
         self.schema = schema
         self.parameters = parameters
         self.limits = (limits or Limits())
+
+    def get_report_detail(self):
+        return dict(
+            vars(self.limits),
+            endpoint=self.endpoint,
+        )
 
     def peel(self, data):
         """
@@ -62,7 +69,9 @@ class ListTester(RequestSuite):
 
     @cached_property
     def baseline_items(self):
+        start_time = wallclock()
         items = self.get_list(self.request("GET", self.endpoint))
+        self.baseline_duration = wallclock() - start_time
         assert isinstance(items, list), 'baseline response not a list'
         return items
 
@@ -88,7 +97,7 @@ class ListTester(RequestSuite):
             param: param.embucket(prop_values[param.parameter])
             for param
             in self.parameters
-        }
+            }
         limit = self.limits.max_single_tests_per_param
         for param, values in param_to_values.items():
             if param.discrete:
@@ -107,7 +116,7 @@ class ListTester(RequestSuite):
             (param, prop_values[param.parameter])
             for param
             in self.parameters
-        ]
+            ]
         involvement_counter = Counter()  # not updated if not limited
         n_tests = 0
         while n_tests < self.limits.max_multi_tests:
@@ -120,8 +129,8 @@ class ListTester(RequestSuite):
             params = params_to_values.keys()
             if self.limits.max_multi_tests_involving_param:
                 if any(
-                    involvement_counter[param] > self.limits.max_multi_tests_involving_param
-                    for param in params
+                        involvement_counter[param] > self.limits.max_multi_tests_involving_param
+                        for param in params
                 ):
                     continue
                 for param in params:

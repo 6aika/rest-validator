@@ -1,0 +1,18 @@
+{% import "_report_macros.html" as rm with context %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        {% include "style.css" %}
+    </style>
+</head>
+<body>
+<header>{{ title }}</header>
+{% for suite in suites %}
+    {{ rm.report_suite(suite) }}
+{% endfor %}
+</body>
+</html>
+

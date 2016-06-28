@@ -1,0 +1,25 @@
+{
+  "name": "rest-validate",
+  "version": "0.0.0",
+  "description": "API Validator =============",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/6aika/rest-validator.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/6aika/rest-validator/issues"
+  },
+  "homepage": "https://github.com/6aika/rest-validator#readme",
+  "devDependencies": {
+    "stylus": "^0.54.5"
+  }
+}

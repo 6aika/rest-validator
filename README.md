@@ -13,5 +13,5 @@ for the https://github.com/6aika/issue-reporting API.
 * Set up the above repository and import some issues; leave the server
   running on `127.0.0.1:8000` (or elsewhere, see below)
 * Set `PYTHONPATH` to `.` (so `rv` may be imported)
-* `python -m rv examples.issue_reporting` (add `--endpoint` if required)
+* `python -m rv --html report.html examples.issue_reporting` (add `--endpoint` if required)
 

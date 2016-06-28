@@ -1,0 +1,109 @@
+{% macro test_detail(test) %}
+    {% set url = test.url %}
+    <details class="{% if test.errors %}errors{% endif %}">
+        <summary>{{ test.name }}</summary>
+        {% if test.description %}
+            <blockquote>{{ test.description }}</blockquote>
+        {% endif %}
+        <table class="table zebra">
+            <tbody>
+            <tr>
+                <th>Duration</th>
+                <td>{{ (test.duration * 1000)|round(2) }} msec</td>
+            </tr>
+            {% if url %}
+                <tr>
+                    <th>URL</th>
+                    <td><a href="{{ url }}" target="_blank">{{ url }}</a></td>
+                </tr>
+            {% endif %}
+            {% for key, value in test.get_report_detail()|dictsort %}
+                <tr>
+                    <th>{{ key }}</th>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if test.errors %}
+        <ul>
+            {% for error in test.errors %}
+                <li>
+                    {{ error.__class__.__name__ }}: {{ error }}
+                </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </details>
+{% endmacro %}
+
+{% macro suite_summary_table(suite) %}
+    <table class="table zebra">
+        <thead>
+        <tr>
+            <th>Test</th>
+            <th>Type</th>
+            <th class="num">Duration (msec)</th>
+            <th class="num">Errors</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for test in suite.tests|sort(attribute='name') %}
+            <tr>
+                <td>{{ test.name }}</td>
+                <td>{{ test.type }}</td>
+                <td class="num">{{ (test.duration*1000)|round|int }}</td>
+                <td class="num">{{ test.errors|count }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+
+{% macro report_suite(suite) %}
+    <article class="suite">
+        <h2>{{ suite.name }}</h2>
+        <section class="summary">
+            <blockquote>{{ suite.description }}</blockquote>
+            {% set tstats = suite.get_timing_stats() %}
+            <div class="cols">
+                <div class="col">
+                    <dl>
+                        <dt>Number of Tests</dt>
+                        <dd>{{ suite.tests|length }}</dd>
+                        <dt>Number of Errors</dt>
+                        <dd>{{ suite.num_errors }}</dd>
+                    </dl>
+                </div>
+                <div class="col">
+                    <dl>
+                        <dt>Total Duration (msec)</dt>
+                        <dd>{{ tstats.total|round }}</dd>
+                        <dt>Min/Max Duration (msec)</dt>
+                        <dd>
+                            {{ tstats.min|round }} &mdash; {{ tstats.max|round }}<br>
+                            mean: {{ tstats.mean|round }}; median: {{ tstats.median|round }}; stdev: {{ tstats.stdev }}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col">
+                    <table class="detail zebra">
+                        {% for key, value in suite.get_report_detail()|dictsort %}
+                            <tr>
+                                <th>{{ key }}</th>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            {{ suite_summary_table(suite) }}
+        </section>
+        <section class="detail">
+            <h3>Details</h3>
+            {% for test in suite.tests|sort(attribute='name') %}
+                {{ test_detail(test) }}
+            {% endfor %}
+        </section>
+    </article>
+{% endmacro %}

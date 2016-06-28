@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-from itertools import product
 from urllib.parse import urlparse
 
 import jsonschema
@@ -18,13 +17,11 @@ class Limits(object):
         *,
         max_single_tests_per_param=None,
         max_multi_tests_involving_param=None,
-        max_multi_tests=None,
-        multi_param_probability=1.0
+        max_multi_tests=250
     ):
         self.max_single_tests_per_param = int(max_single_tests_per_param or 0)
         self.max_multi_tests_involving_param = int(max_multi_tests_involving_param or 0)
-        self.max_multi_tests = int(max_multi_tests or 0)
-        self.multi_param_probability = float(multi_param_probability)
+        self.max_multi_tests = int(max_multi_tests)
 
 
 class ListTester(RequestSuite):
@@ -103,42 +100,36 @@ class ListTester(RequestSuite):
             for value in test_values:
                 yield SingleParamTest(tester=self, param=param, value=value)
 
-    def _produce_combinations(self):
-        prob = self.limits.multi_param_probability
+    def _build_multi_param_tests(self):
         prop_values = self.baseline_values
-        param_to_values = [
+        params_to_value_ranges = [
             (param, prop_values[param.parameter])
             for param
             in self.parameters
         ]
-        params, values = zip(*param_to_values)
-        for v_values in product(*values):
-            if prob < 1 and random.random() >= prob:
-                continue
-            yield {
-                param: value
-                for (param, value)
-                in zip(params, v_values)
-                if value is not None
-            }
-
-    def _build_multi_param_tests(self):
-        involvement_counter = Counter()
+        involvement_counter = Counter()  # not updated if not limited
         n_tests = 0
-        for param_to_values in self._produce_combinations():
-            params = param_to_values.keys()
+        while n_tests < self.limits.max_multi_tests:
+            param_vr_tuples = random.sample(params_to_value_ranges, random.randint(2, len(params_to_value_ranges)))
+            if len({param[0].property for param in param_vr_tuples}) != len(param_vr_tuples):
+                # duplicate properties; no sense testing this
+                continue
+            # TODO: This could be made to use `.generate_values()` too
+            params_to_values = {param: random.choice(values) for (param, values) in param_vr_tuples}
+            params = params_to_values.keys()
             if self.limits.max_multi_tests_involving_param:
                 if any(
-                        involvement_counter[param] > self.limits.max_multi_tests_involving_param
-                        for param in params
+                    involvement_counter[param] > self.limits.max_multi_tests_involving_param
+                    for param in params
                 ):
                     continue
-            yield MultipleParamsTest(tester=self, params_to_values=param_to_values)
-            for param in params:
-                involvement_counter[param] += 1
+                for param in params:
+                    involvement_counter[param] += 1
+            yield MultipleParamsTest(
+                tester=self,
+                params_to_values=params_to_values
+            )
             n_tests += 1
-            if self.limits.max_multi_tests and n_tests >= self.limits.max_multi_tests:
-                break
 
     @cached_property
     def tests(self):

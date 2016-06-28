@@ -80,7 +80,6 @@ def run(endpoint, verbose=False):
         limits=Limits(
             max_single_tests_per_param=10,
             max_multi_tests=100,
-            multi_param_probability=0.1,
         ),
     )
     tester.base_params = {

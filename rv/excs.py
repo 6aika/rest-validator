@@ -41,7 +41,7 @@ class ParamValueError(TestException):
         super(ParamValueError, self).__init__(test=test, message=message)
 
 
-class ExpectedItemsGotNone(TestException):
+class ExpectedMoreItems(TestException):
     """
     Some items were expected but none were received.
     """

@@ -44,6 +44,12 @@ class Suite(object):
             'stdev': statistics.stdev(durations),
         }
 
+    def calculate_apdex(self, duration_threshold_sec):
+        durations = sorted(t.duration for t in self.tests if t.duration is not None)
+        if not durations:
+            return None
+        return len([1 for d in durations if d < duration_threshold_sec]) / len(durations)
+
     def run(self):
         """
         Run all the tests and print results to stdout.

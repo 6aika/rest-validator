@@ -26,13 +26,13 @@
             </tbody>
         </table>
         {% if test.errors %}
-        <ul>
-            {% for error in test.errors %}
-                <li>
-                    {{ error.__class__.__name__ }}: {{ error }}
-                </li>
-            {% endfor %}
-        </ul>
+            <ul>
+                {% for error in test.errors %}
+                    <li>
+                        {{ error.__class__.__name__ }}: {{ error }}
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
     </details>
 {% endmacro %}
@@ -66,37 +66,53 @@
         <section class="summary">
             <blockquote>{{ suite.description }}</blockquote>
             {% set tstats = suite.get_timing_stats() %}
-            <div class="cols">
-                <div class="col">
-                    <dl>
-                        <dt>Number of Tests</dt>
-                        <dd>{{ suite.tests|length }}</dd>
-                        <dt>Number of Errors</dt>
-                        <dd>{{ suite.num_errors }}</dd>
-                    </dl>
-                </div>
-                <div class="col">
-                    <dl>
-                        <dt>Total Duration (msec)</dt>
-                        <dd>{{ tstats.total|round }}</dd>
-                        <dt>Min/Max Duration (msec)</dt>
-                        <dd>
-                            {{ tstats.min|round }} &mdash; {{ tstats.max|round }}<br>
-                            mean: {{ tstats.mean|round }}; median: {{ tstats.median|round }}; stdev: {{ tstats.stdev }}
-                        </dd>
-                    </dl>
-                </div>
-                <div class="col">
-                    <table class="detail zebra">
-                        {% for key, value in suite.get_report_detail()|dictsort %}
-                            <tr>
-                                <th>{{ key }}</th>
-                                <td>{{ value }}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
+            <table class="zebra">
+                <tr>
+                    <th>Number of Tests</th>
+                    <td class="num">{{ suite.tests|length }}</td>
+                </tr>
+                <tr>
+                    <th>Number of Errors</th>
+                    <td class="num">{{ suite.num_errors }}</td>
+                </tr>
+                {% if tstats %}
+                    <tr>
+                        <th>Total Duration (msec)</th>
+                        <td class="num">{{ tstats.total|round(1) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Min Duration (msec)</th>
+                        <td class="num">
+                            {{ tstats.min|round(1) }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Max Duration (msec)</th>
+                        <td class="num">
+                            {{ tstats.max|round(1) }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Duration Stats (msec)</th>
+                        <td>
+                            mean: {{ tstats.mean|round(1) }}; median: {{ tstats.median|round(1) }};
+                            stdev: {{ tstats.stdev|round(1) }}
+                        </td>
+                    </tr>
+                    {% for thresh in [0.3, 0.5, 1] %}
+                        <tr>
+                            <th>APDEX<sub>{{ thresh|round(1) }}</sub></th>
+                            <td class="num">{{ suite.calculate_apdex(thresh)|round(2) }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                {% for key, value in suite.get_report_detail()|dictsort %}
+                    <tr>
+                        <th>{{ key|title }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
             {{ suite_summary_table(suite) }}
         </section>
         <section class="detail">

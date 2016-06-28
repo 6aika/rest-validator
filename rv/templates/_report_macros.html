@@ -38,7 +38,7 @@
 {% endmacro %}
 
 {% macro suite_summary_table(suite) %}
-    <table class="table zebra">
+    <table class="table zebra sortable">
         <thead>
         <tr>
             <th>Test</th>
@@ -52,8 +52,8 @@
             <tr>
                 <td>{{ test.name }}</td>
                 <td>{{ test.type }}</td>
-                <td class="num">{{ (test.duration*1000)|round|int }}</td>
-                <td class="num">{{ test.errors|count }}</td>
+                <td class="num" data-num="{{ test.duration }}">{{ (test.duration*1000)|round|int }}</td>
+                <td class="num" data-num="{{ test.errors|count }}">{{ test.errors|count }}</td>
             </tr>
         {% endfor %}
         </tbody>

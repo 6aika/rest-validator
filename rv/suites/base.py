@@ -6,6 +6,10 @@ import requests
 
 
 class Suite(object):
+    """
+    Generates and groups logically similar Tests.
+    """
+
     description = ""
 
     def __init__(self, *, name):
@@ -31,6 +35,10 @@ class Suite(object):
         return {}
 
     def get_timing_stats(self):
+        """
+        Return a dictionary of timing statistics.
+        :rtype: dict[str, float]
+        """
         durations = sorted(t.duration * 1000 for t in self.tests if t.duration is not None)
         if not durations:
             return None
@@ -44,11 +52,28 @@ class Suite(object):
             'stdev': statistics.stdev(durations),
         }
 
-    def calculate_apdex(self, duration_threshold_sec):
-        durations = sorted(t.duration for t in self.tests if t.duration is not None)
+    def calculate_apdex(self, satisfied_threshold_sec):
+        """
+        Calculate the Apdex score given a "satisfied" threshold.
+
+        See https://en.wikipedia.org/wiki/Apdex#Apdex_method
+
+        :param satisfied_threshold_sec:
+            How many seconds a request should take to be considered satisfactorily fast
+        :return: Decimal value between 0 and 1
+        """
+        durations = [t.duration for t in self.tests if t.duration is not None]
         if not durations:
             return None
-        return len([1 for d in durations if d < duration_threshold_sec]) / len(durations)
+        tolerating_threshold_sec = satisfied_threshold_sec * 4
+        n_satisfied = 0
+        n_tolerating = 0
+        for duration in durations:
+            if duration <= satisfied_threshold_sec:
+                n_satisfied += 1
+            elif duration <= tolerating_threshold_sec:
+                n_tolerating += 1
+        return (n_satisfied + (n_tolerating / 2)) / len(durations)
 
     def run(self):
         """
@@ -63,6 +88,12 @@ class Suite(object):
 
 
 class RequestSuite(Suite):
+    """
+    A Suite with an additional `requests` Session (for connection pooling).
+
+    In addition, lets one set additional base query parameters to
+    send with each request (provided `.session` isn't accessed directly).
+    """
     base_params = {}
 
     def __init__(self, *, name):

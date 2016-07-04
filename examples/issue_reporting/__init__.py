@@ -16,7 +16,7 @@ def day_bucket(dt):
 class IssueReportingValidator(BaseValidator):
     DEFAULT_ENDPOINT = 'http://127.0.0.1:8000/api/georeport/v2/requests.json'
 
-    def get_cli_params(self):
+    def get_click_options(self):
         return [
             Option(
                 param_decls=('-e', '--endpoint'),
@@ -54,12 +54,18 @@ class IssueReportingValidator(BaseValidator):
             endpoint=endpoint,
             schema=ISSUE_SCHEMA,
             parameters=[
+                # Discrete-valued parameters; ListTester will read their values from the baseline and
+                # act accordingly.
+                # TODO: Maybe sometime in the future these could be preset instead of read from the baseline?
+                #       In that case, though, we can't raise an error if we don't get any items at all...
                 Param(property='status'),
                 Param(property='service_code'),
-                DateTimeParam(property='requested_datetime', parameter='start_date', operator=ge, bucket=day_bucket),
-                DateTimeParam(property='requested_datetime', parameter='end_date', operator=le, bucket=day_bucket),
-                DateTimeParam(property='updated_datetime', parameter='updated_after', operator=ge, bucket=day_bucket),
-                DateTimeParam(property='updated_datetime', parameter='updated_before', operator=le, bucket=day_bucket),
+
+                # Continuous-values parameters with differing property/parameters, and comparison functions.
+                DateTimeParam(property='requested_datetime', parameter='start_date', operator=ge, bucket=day_bucket, discrete=False),
+                DateTimeParam(property='requested_datetime', parameter='end_date', operator=le, bucket=day_bucket, discrete=False),
+                DateTimeParam(property='updated_datetime', parameter='updated_after', operator=ge, bucket=day_bucket, discrete=False),
+                DateTimeParam(property='updated_datetime', parameter='updated_before', operator=le, bucket=day_bucket, discrete=False),
             ],
             limits=Limits(
                 max_single_tests_per_param=max_single_tests_per_param,

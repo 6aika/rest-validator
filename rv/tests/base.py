@@ -1,10 +1,16 @@
 from uuid import uuid4
 
-from rv.excs import WrappedTestException
+from rv.excs import WrappedTestException, TestException
 from rv.utils import wallclock
 
 
 class Test(object):
+    """
+    Tests are the lowest, simplest unit of execution and encapsulate
+    a single attempt at verifying something.
+
+    Unlike regular unit tests though, these tests may yield several errors.
+    """
     name = "Some Test"
     description = ""
     url = ""
@@ -17,6 +23,15 @@ class Test(object):
         self.duration = None
 
     def run(self):
+        """
+        Run the test if it hasn't been run yet.
+
+        Keeps track of execution time and stores errors;
+        if you're looking to override something in a sub-
+        class, it should be `.execute()` instead.
+
+        :return: True if no errors were found, False otherwise.
+        """
         if not self.has_been_run:
             start_time = wallclock()
             errors = []
@@ -30,7 +45,16 @@ class Test(object):
         return not bool(self.errors)
 
     def execute(self):
-        raise NotImplementedError("...")
+        """
+        Actually execute the test.
+
+        This function should yield (or return an iterable of) `TestException`
+        (or subclasses thereof) instances.  It _may_ also raise exceptions.
+
+        :return: Iterable of exceptions
+        :rtype: Iterable[TestException]
+        """
+        yield TestException(self, '%s has not been implemented' % self.__class__.__name__)
 
     def get_report_detail(self):
         """
@@ -40,26 +64,11 @@ class Test(object):
 
     @property
     def type(self):
+        """
+        Get the type of this test (from the classname).
+        :return: str
+        """
         typename = self.__class__.__name__
         if typename.endswith('Test'):
             typename = typename[:-4]
         return typename
-
-
-class BaseParamTest(Test):
-
-    def __init__(self, suite):
-        super().__init__(suite)
-        self.response = None
-        self.items = None
-
-    @property
-    def url(self):
-        if self.response:
-            return self.response.request.url
-        return None
-
-    def get_report_detail(self):
-        return {
-            'num_items': len(self.items or ()),
-        }

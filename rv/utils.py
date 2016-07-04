@@ -1,3 +1,5 @@
+import importlib
+import inspect
 import sys
 import time
 
@@ -35,3 +37,28 @@ def wallclock():
         return time.clock()
     else:
         return time.time()
+
+
+def find_class(classpath, subclass):
+    """
+    Find a class object of the given type given a dotted string.
+
+    One may pass either a full class such as `rv.tests.base.Test`,
+    or a module containing one (in which case the first matching
+    class is returned).
+
+    :param classpath: Class path string
+    :param subclass: Find a subclass of this class.
+    :return: class object or None
+    :rtype: object|None
+    """
+    bits = classpath.split('.')
+    if bits[-1][0].isupper():  # Last bit is capitalized; assume it's a classpath
+        val = getattr(importlib.import_module('.'.join(bits[:-1])), bits[-1])
+        assert issubclass(val, subclass)
+        return val
+    else:  # Last bit not capitalized; assume it's a module and find the first valid subclass
+        mod = importlib.import_module(classpath)
+        for var, val in vars(mod).items():
+            if inspect.isclass(val) and val is not subclass and issubclass(val, subclass):
+                return val

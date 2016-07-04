@@ -1,9 +1,32 @@
 from rv.excs import ExpectedMoreItems, ParamValueError
-from rv.tests.base import BaseParamTest
+from rv.tests.base import Test
 from rv.tests.validation import ValidationTest
 
 
+class BaseParamTest(Test):
+
+    def __init__(self, suite):
+        super().__init__(suite)
+        self.response = None
+        self.items = None
+
+    @property
+    def url(self):
+        if self.response:
+            return self.response.request.url
+        return None
+
+    def get_report_detail(self):
+        return {
+            'num_items': len(self.items or ()),
+        }
+
+
 class SingleParamTest(BaseParamTest):
+    """
+    Test that given a list/search endpoint, all of the items returned
+    match the single parameter attempted.
+    """
 
     def __init__(self, suite, param, value):
         super(SingleParamTest, self).__init__(suite)
@@ -51,6 +74,10 @@ class SingleParamTest(BaseParamTest):
 
 
 class MultipleParamsTest(BaseParamTest):
+    """
+    Test that given a list/search endpoint, all of the items returned
+    match the multiple parameters attempted.
+    """
 
     def __init__(self, suite, params_to_values, min_expected=0):
         super(MultipleParamsTest, self).__init__(suite)

@@ -1,43 +1,62 @@
-import importlib
-import inspect
 import logging
 
 import click
 
 from rv.report import HTMLReportWriter
+from rv.utils import find_class
 
 log = logging.getLogger(__name__)
 
 
 class BaseValidator(object):
 
-    def get_cli_params(self):
+    def get_click_options(self):
+        """
+        Get a list of Click options for this Validator.
+
+        This is called by `get_click_command`, so if you
+        override that function in your subclass, pay no
+        attention to this one.
+
+        :return: list[click.Option]
+        """
         return []
 
-    def get_cli_command(self):
+    def get_click_command(self):
+        """
+        Get a Click command for running this Validator.
+
+        Note that the CLI multicommand shell rewrites
+        the `callback` for this command to actually
+        rig up the tests for running!
+
+        :return: Click command
+        :rtype: click.Command
+        """
         return click.Command(
             name=self.__class__.__name__,
-            params=self.get_cli_params(),
+            params=self.get_click_options(),
         )
 
     def get_suites(self, **kwargs):
-        raise NotImplementedError('...')
+        """
+        Get the actual parametrized test suites to run.
 
-
-def find_class(classpath, subclass):
-    bits = classpath.split('.')
-    if bits[-1][0].isupper():  # Last bit is capitalized; assume it's a classpath
-        val = getattr(importlib.import_module('.'.join(bits[:-1])), bits[-1])
-        assert issubclass(val, subclass)
-        return val
-    else:  # Last bit not capitalized; assume it's a module and find the first valid subclass
-        mod = importlib.import_module(classpath)
-        for var, val in vars(mod).items():
-            if inspect.isclass(val) and val is not subclass and issubclass(val, subclass):
-                return val
+        :param kwargs: Option values from Click (or elsewhere!)
+        :rtype: Iterable[Suite]
+        """
+        while False:  # Mark this function as an iterator
+            yield None
+        raise NotImplementedError('Implement get_suites in a subclass')
 
 
 class RvCLI(click.MultiCommand):
+    """
+    Command-line runner main class.
+
+    Does quite some magic around Click -- hopefully you, dear reader,
+    do not need to touch that voodoo.
+    """
 
     def __init__(self):
         super().__init__(
@@ -55,7 +74,7 @@ class RvCLI(click.MultiCommand):
 
     def get_command(self, ctx, name):
         self.validator = find_class(name, BaseValidator)()
-        command = self.validator.get_cli_command()
+        command = self.validator.get_click_command()
         command.callback = self.run
         return command
 

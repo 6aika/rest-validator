@@ -1,7 +1,7 @@
+import os
 from operator import attrgetter
 
 import jinja2
-import os
 
 TEMPLATE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -16,6 +16,7 @@ jinja_env = jinja2.Environment(
 
 
 class HTMLReportWriter(object):
+
     def __init__(self, suites):
         self.suites = list(sorted(suites, key=attrgetter('name')))
 

@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 
 class BaseValidator(object):
+
     def get_cli_params(self):
         return []
 
@@ -37,6 +38,7 @@ def find_class(classpath, subclass):
 
 
 class RvCLI(click.MultiCommand):
+
     def __init__(self):
         super().__init__(
             callback=self.init_callback,

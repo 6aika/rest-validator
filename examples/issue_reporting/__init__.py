@@ -2,10 +2,11 @@ from operator import ge, le
 
 from click import Option
 
-from .schema import ISSUE_SCHEMA
-from rv.lists import Limits, ListTester
 from rv.params import DateTimeParam, Param
 from rv.shell import BaseValidator
+from rv.suites.lists import Limits, ListTester
+
+from .schema import ISSUE_SCHEMA
 
 
 def day_bucket(dt):
@@ -14,6 +15,7 @@ def day_bucket(dt):
 
 class IssueReportingValidator(BaseValidator):
     DEFAULT_ENDPOINT = 'http://127.0.0.1:8000/api/georeport/v2/requests.json'
+
     def get_cli_params(self):
         return [
             Option(
@@ -68,4 +70,3 @@ class IssueReportingValidator(BaseValidator):
             'page_size': page_size,
         }
         yield tester
-

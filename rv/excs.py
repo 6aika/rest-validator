@@ -69,6 +69,7 @@ class WrappedTestException(TestException):
 
 
 class ValidationException(TestException):
+
     def __init__(self, test, item, error, message=None):
         self.item = item
         self.error = error

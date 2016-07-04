@@ -5,12 +5,14 @@ from urllib.parse import urlparse
 import jsonschema
 import requests
 
-from rv.suites import RequestSuite
-from rv.tests import MultipleParamsTest, SingleParamTest, ValidationTest
+from rv.suites.base import RequestSuite
+from rv.tests.params import MultipleParamsTest, SingleParamTest
+from rv.tests.validation import ValidationTest
 from rv.utils import cached_property, wallclock
 
 
 class Limits(object):
+
     def __init__(
         self,
         *,
@@ -97,7 +99,7 @@ class ListTester(RequestSuite):
             param: param.embucket(prop_values[param.parameter])
             for param
             in self.parameters
-            }
+        }
         limit = self.limits.max_single_tests_per_param
         for param, values in param_to_values.items():
             if param.discrete:
@@ -116,7 +118,7 @@ class ListTester(RequestSuite):
             (param, prop_values[param.parameter])
             for param
             in self.parameters
-            ]
+        ]
         involvement_counter = Counter()  # not updated if not limited
         n_tests = 0
         while n_tests < self.limits.max_multi_tests:
